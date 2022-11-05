@@ -27,18 +27,26 @@ import './Board.css';
  *
  **/
 
-function Board({ nrows, ncols, chanceLightStartsOn }) {
+function Board({ nrows = 6, ncols = 6, chanceLightStartsOn = 0.33 }) {
   const [board, setBoard] = useState(createBoard());
 
   /** create a board nrows high/ncols wide, each cell randomly lit or unlit */
   function createBoard() {
     let initialBoard = [];
     // TODO: create array-of-arrays of true/false values
+    for (let i = 0; i < nrows; i++) {
+      let row = [];
+      for (let j = 0; j < ncols; j++) {
+        row.push(Math.random() < chanceLightStartsOn);
+      }
+      initialBoard.push(row);
+    }
     return initialBoard;
   }
 
   function hasWon() {
     // TODO: check the board in state to determine whether the player has won.
+    return board.every((row) => row.every((cell) => !cell));
   }
 
   function flipCellsAround(coord) {
@@ -54,21 +62,49 @@ function Board({ nrows, ncols, chanceLightStartsOn }) {
       };
 
       // TODO: Make a (deep) copy of the oldBoard
+      let newBoard = oldBoard.map((row) => [...row]);
 
       // TODO: in the copy, flip this cell and the cells around it
+      flipCell(y, x, newBoard);
+      flipCell(y, x + 1, newBoard);
+      flipCell(y, x - 1, newBoard);
+      flipCell(y + 1, x, newBoard);
+      flipCell(y - 1, x, newBoard);
 
       // TODO: return the copy
+      return newBoard;
     });
   }
 
   // if the game is won, just show a winning msg & render nothing else
-
+  if (hasWon()) {
+    return <div>You Won!</div>;
+  }
   // TODO
 
   // make table board
+  let tableBoard = [];
+  for (let y = 0; y < nrows; y++) {
+    let row = [];
+    for (let x = 0; x < ncols; x++) {
+      let location = `${y}-${x}`;
+      row.push(
+        <Cell
+          key={location}
+          isLit={board[y][x]}
+          flipCellsAroundMe={() => flipCellsAround(location)}
+        />
+      );
+    }
+    tableBoard.push(<tr key={y}>{row}</tr>);
+  }
 
   // TODO
-  return <h1>Board</h1>;
+  return (
+    <table className="Board">
+      <tbody>{tableBoard}</tbody>
+    </table>
+  );
 }
 
 export default Board;
